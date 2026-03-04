@@ -21,3 +21,6 @@ serde = { version = "1", features = ["derive"] }
 # Random/noise
 rand = "0.8"
 noise = "0.9"
+
+[profile.dev]
+debug = 0

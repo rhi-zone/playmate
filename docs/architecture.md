@@ -1,26 +1,26 @@
 # Architecture
 
-Technical architecture of frond.
+Technical architecture of playmate.
 
 ## Layer Structure
 
 ```
-frond/
+playmate/
 ├── core/                    # Pure Rust, no engine deps
-│   ├── frond-spatial/       # Quadtree, BVH, spatial hash
-│   ├── frond-pathfinding/   # A*, flow fields, nav mesh
-│   └── frond-math/          # Kinematic helpers, curves
+│   ├── playmate-spatial/       # Quadtree, BVH, spatial hash
+│   ├── playmate-pathfinding/   # A*, flow fields, nav mesh
+│   └── playmate-math/          # Kinematic helpers, curves
 │
 ├── bindings/                # Engine-specific adapters
-│   ├── frond-godot/         # GDExtension
-│   ├── frond-bevy/          # Bevy systems/components
-│   ├── frond-unity/         # NativePlugin + C# wrapper
-│   └── frond-love/          # Lua FFI for Love2D
+│   ├── playmate-godot/         # GDExtension
+│   ├── playmate-bevy/          # Bevy systems/components
+│   ├── playmate-unity/         # NativePlugin + C# wrapper
+│   └── playmate-love/          # Lua FFI for Love2D
 │
 ├── scripting/               # Game logic in engine-native languages
-│   ├── frond-gdscript/      # GDScript library
-│   ├── frond-lua/           # Lua patterns (Love2D, etc.)
-│   └── frond-csharp/        # C# patterns (Unity)
+│   ├── playmate-gdscript/      # GDScript library
+│   ├── playmate-lua/           # Lua patterns (Love2D, etc.)
+│   └── playmate-csharp/        # C# patterns (Unity)
 │
 └── docs/                    # Universal patterns, language-agnostic
 ```
@@ -60,7 +60,7 @@ Game logic lives in GDScript for moddability:
 ```gdscript
 # FSM for movement states
 extends Node
-var fsm = preload("res://addons/frond/fsm.gd").new()
+var fsm = preload("res://addons/playmate/fsm.gd").new()
 
 func _ready():
     fsm.add_state("idle")
@@ -73,7 +73,7 @@ func _ready():
 Performance-critical code in Rust, exposed to GDScript:
 
 ```rust
-// bindings/frond-godot/src/lib.rs
+// bindings/playmate-godot/src/lib.rs
 use godot::prelude::*;
 
 #[derive(GodotClass)]

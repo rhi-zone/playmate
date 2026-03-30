@@ -24,7 +24,7 @@ Or install Godot 4 manually from [godotengine.org](https://godotengine.org/).
 
 ### Development Workflow
 
-1. **Write GDScript patterns** - frond provides composable utilities
+1. **Write GDScript patterns** - playmate provides composable utilities
 2. **Test headlessly** - no editor needed for quick iteration
 3. **Integrate in editor** - attach to scenes when ready
 
@@ -46,7 +46,7 @@ Example test script:
 extends SceneTree
 
 func _init():
-    var fsm = preload("res://addons/frond/fsm.gd").new()
+    var fsm = preload("res://addons/playmate/fsm.gd").new()
     fsm.add_state("idle")
     fsm.add_state("run")
     fsm.add_transition("idle", "run", func(): return Input.is_action_pressed("move"))
@@ -63,7 +63,7 @@ func _init():
 ```
 my_game/
 ├── addons/
-│   └── frond/           # frond GDScript library
+│   └── playmate/        # playmate GDScript library
 │       ├── fsm.gd
 │       ├── timing.gd
 │       └── stats.gd
@@ -79,8 +79,8 @@ For performance-critical features (spatial queries, pathfinding), use the Rust c
 ```toml
 # Cargo.toml
 [dependencies]
-frond-spatial = "0.1"
-frond-pathfinding = "0.1"
+playmate-spatial = "0.1"
+playmate-pathfinding = "0.1"
 godot = "0.2"  # gdext
 ```
 

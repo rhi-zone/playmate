@@ -12,7 +12,7 @@ A state machine has:
 ## Basic Usage
 
 ```rust
-use frond_fsm::{StateMachine, State};
+use playmate_fsm::{StateMachine, State};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 enum DoorState {

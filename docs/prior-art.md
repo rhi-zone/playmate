@@ -1,12 +1,12 @@
 # Prior Art
 
-Existing solutions and how frond relates.
+Existing solutions and how playmate relates.
 
 ## State Machines
 
 | Library | Approach | Playmate Relation |
 |---------|----------|----------------|
-| `bevy_state` | Bevy-native states | Inspiration; frond is engine-agnostic |
+| `bevy_state` | Bevy-native states | Inspiration; playmate is engine-agnostic |
 | `statig` | Hierarchical FSM | Reference for advanced patterns |
 | `seldom_state` | Bevy state plugin | Similar goals, different scope |
 

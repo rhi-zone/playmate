@@ -1,6 +1,6 @@
 # Philosophy
 
-Design principles for frond.
+Design principles for playmate.
 
 ## Building Blocks, Not Frameworks
 
@@ -66,11 +66,11 @@ Each state owns its behavior. Transitions are explicit. Edge cases are visible.
 
 ## Engine Agnostic
 
-No engine dependencies in core frond crates.
+No engine dependencies in core playmate crates.
 
 - Use `glam` for math (shared by Bevy, macroquad, rend3, others)
 - Use `serde` for serialization (works everywhere)
-- Integration crates (e.g., `frond-bevy`) provide engine-specific adapters
+- Integration crates (e.g., `playmate-bevy`) provide engine-specific adapters
 
 Playmate works with any Rust game engine or no engine at all.
 

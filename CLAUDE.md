@@ -14,34 +14,42 @@ Behavioral rules for Claude Code in this repository.
 
 **Rule of thumb:** If modders should change it → scripting. If it needs to be fast → core.
 
-## Core Rules
+## Context Is The Only Scarce Resource
 
-**Note things down immediately — no deferral:**
+Every byte that enters the main session stays in the main session for its entire lifetime. File contents, command output, search results — once read, it lingers in cache and shapes every downstream token. There is no "just looking."
+
+**All exploration runs in subagents.** Investigations, audits, deep dives, surveys, "let me check," "let me find" — if the purpose of a tool sequence is to find out something you don't yet know, it runs in a subagent. Renaming the activity does not change what it is. The subagent returns a distilled summary; the raw output stays in the subagent.
+
+Inline tool use in the main context is reserved for: reading a known file at a known path, edits/writes you're committing to, a single targeted lookup whose result you'll act on immediately. If you find yourself running a second grep to refine the first, you should have spawned a subagent.
+
+The main session holds only the durable artifacts you are producing: the edit, the commit, the doc update.
+
+## Durability
+
+Subagent reports, mid-session realizations, "I'll remember this" — none of these outlast the session. Anything worth keeping goes into CLAUDE.md, code, docs, or a commit. If it isn't written down, it is gone.
+
 - Problems, tech debt, issues → TODO.md now, in the same response
 - Design decisions, key insights → docs/ or CLAUDE.md
 - Future/deferred scope → TODO.md **before** writing any code, not after
-- **Every observed problem → TODO.md. No exceptions.** Code comments and conversation mentions are not tracked items. If you write a TODO comment in source, the next action is to open TODO.md and write the entry.
+- **Every observed problem → TODO.md. No exceptions.** Code comments and conversation mentions are not tracked items.
 
-**Conversation is not memory.** Anything said in chat evaporates at session end. If it implies future behavior change, write it to CLAUDE.md or a memory file immediately — or it will not happen.
+**Commit completed work immediately.** After tests pass, commit. After each phase of a multi-phase plan, commit. Uncommitted work is lost work, and accumulated uncommitted phases lose isolation as well.
 
-**Warning — these phrases mean something needs to be written down right now:**
-- "I won't do X again" / "I'll remember to..." / "I've learned that..."
-- "Next time I'll..." / "From now on I'll..."
-- Any acknowledgement of a recurring error without a corresponding CLAUDE.md or memory edit
+**Docs change in the same commit as the code.** New pages enter the sidebar in that commit. There is no follow-up.
 
-**Triggers:** User corrects you, 2+ failed attempts, "aha" moment, framework quirk discovered → document before proceeding.
+## Authenticity
 
-**When the user corrects you:** Ask what rule would have prevented this, and write it before proceeding. **"The rule exists, I just didn't follow it" is never the diagnosis** — a rule that doesn't prevent the failure it describes is incomplete; fix the rule, not your behavior.
+When asked to analyze X, read X. Do not synthesize from conversation memory, prior summaries, or what the file probably says. Claims must correspond to evidence produced this session.
+
+**Something unexpected is a signal.** Surprising output, anomalous numbers, a file containing what it shouldn't — stop and find out why. Do not accept the anomaly and proceed.
 
 **Corrections are documentation lag, not model failure.** When the same mistake recurs, the fix is writing the invariant down — not repeating the correction. Every correction that doesn't produce a CLAUDE.md edit will happen again. Exception: during active design, corrections are the work itself — don't prematurely document a design that hasn't settled yet.
 
-**Something unexpected is a signal, not noise.** Surprising output, anomalous numbers, files containing what they shouldn't — stop and ask why before continuing. Don't accept anomalies and move on.
+## Discipline
 
-**Don't say these (edit first):** "Fair point", "Should have", "That should go in X" → edit the file BEFORE responding.
+Corrections from the user are conversation, not material for new rules. A single correction does not warrant a CLAUDE.md edit. Rules are added when a failure mode is observed repeatedly and the rule names the failure it prevents.
 
-**Do the work properly.** When asked to analyze X, actually read X - don't synthesize from conversation. The cost of doing it right < redoing it.
-
-**If citing CLAUDE.md after failing:** The file failed its purpose. Adjust it to actually prevent the failure.
+Do not announce actions ("I will now…"). Act.
 
 ## Behavioral Patterns
 
@@ -67,56 +75,19 @@ After editing multiple files, run the full check once — not after each edit. F
 
 **Minimize file churn.** When editing a file, read it once, plan all changes, and apply them in one pass. Avoid read-edit-build-fail-read-fix cycles by thinking through the complete change before starting.
 
-**Always commit completed work.** After tests pass, commit immediately — don't wait to be asked. When a plan has multiple phases, commit after each phase passes. Do not accumulate changes across phases. Uncommitted work is lost work.
-
 **Use `normalize view` for structural exploration:**
 ```bash
 ~/git/rhizone/normalize/target/debug/normalize view <file>    # outline with line numbers
 ~/git/rhizone/normalize/target/debug/normalize view <dir>     # directory structure
 ```
 
-## Context Management
-
-**All exploration runs in subagents. No exceptions.** Any tool call whose purpose is "find out what's here" — grep, find, broad reads, surveys, audits — belongs in a subagent. Raw exploratory output in the main context is active context poisoning: it lingers in cache, shapes downstream reasoning, and can't be unsent. The subagent returns a distilled summary; the noise stays out.
-
-Inline tool use in the main context is reserved for:
-- Reading a known file at a known path
-- Edits/writes you're committing to
-- A single targeted lookup whose result you'll act on immediately
-
-If you find yourself running a second grep to refine the first, you should have spawned a subagent.
+If a tool appears missing, you are outside `nix develop`. Do not assume the tool is unavailable to the project.
 
 ## Commit Convention
 
 Use conventional commits: `type(scope): message`
 
-Types:
-- `feat` - New feature
-- `fix` - Bug fix
-- `refactor` - Code change that neither fixes a bug nor adds a feature
-- `docs` - Documentation only
-- `chore` - Maintenance (deps, CI, etc.)
-- `test` - Adding or updating tests
-
-Scope is optional but recommended for multi-crate repos.
-
-## Negative Constraints
-
-Do not:
-- Announce actions ("I will now...") - just do them
-- Leave work uncommitted
-- Use interactive git commands (`git add -p`, `git add -i`, `git rebase -i`) — these block on stdin and hang in non-interactive shells; stage files by name instead
-- Create special cases - design to avoid them
-- Create legacy APIs - one API, update all callers
-- Add to the monolith - split by domain into sub-crates
-- Do half measures - migrate ALL callers when adding abstraction
-- Return tuples - use structs with named fields
-- Mark as done prematurely - note what remains
-- Consider time constraints - we're NOT short on time; optimize for correctness
-- Use Dynamic rigid bodies for character controllers - use Kinematic controllers
-- Use path dependencies in Cargo.toml - causes clippy to stash changes across repos
-- Use `--no-verify` - fix the issue or fix the hook
-- Assume tools are missing - check if `nix develop` is available for the right environment
+Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`. Scope is optional but recommended for multi-crate repos.
 
 ## Design Principles
 
@@ -124,14 +95,6 @@ Do not:
 - State machines that can drive anything (animation, AI, gameplay)
 - Controllers that work with any physics backend
 - Generators that output data, not side effects
-
-**Unify, don't multiply.** One interface for multiple cases > separate interfaces. Plugin systems > hardcoded switches.
-
-**Simplicity over cleverness.** HashMap > inventory crate. OnceLock > lazy_static. Functions > traits until you need the trait.
-
-**Explicit over implicit.** Log when skipping. Show what's at stake before refusing.
-
-**Separate niche from shared.** Don't bloat shared config with feature-specific data. Use separate files for specialized data.
 
 **Hot-reloadable feel.** Keep magic numbers in config/asset files. Logic in Rust, parameters in data.
 - Prefer `.ron` or `.toml` for tunable parameters
@@ -158,6 +121,19 @@ Do not:
 - Playmate provides primitives, users choose scripting language
 
 **When stuck (2+ attempts):** Step back. Am I solving the right problem? Check docs/philosophy.md before questioning design.
+
+## Hard Constraints
+
+- No `--no-verify`. Fix the issue or fix the hook.
+- No path dependencies in `Cargo.toml` — they couple repos and break independent publishing.
+- No interactive git (`git add -p`, `git add -i`, `git rebase -i`) — these block on stdin and hang.
+- No assuming a tool is missing without checking `nix develop`.
+- No special cases — design to avoid them.
+- No legacy APIs — one API, update all callers.
+- No half measures — migrate ALL callers when adding abstraction.
+- No tuples at API boundaries — use structs with named fields.
+- No Dynamic rigid bodies for character controllers — use Kinematic controllers.
+- No monolith growth — split by domain into sub-crates.
 
 ## Conventions
 

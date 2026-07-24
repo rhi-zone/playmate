@@ -31,10 +31,12 @@ export default withMermaid(
         include: ['mermaid'],
       },
     },
-    title: 'Playmate',
+    title: 'playmate',
     description: 'Game design primitives',
 
     base: '/playmate/',
+
+    srcExclude: ['**/CLAUDE.md'],
 
     themeConfig: {
       nav: [
